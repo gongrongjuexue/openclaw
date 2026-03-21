@@ -6,7 +6,7 @@ import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
 import { startMediaServer } from "./server.js";
 import { saveMediaSource } from "./store.js";
 
-const DEFAULT_PORT = 42873;
+const DEFAULT_PORT = 3000;
 const TTL_MS = 2 * 60 * 1000;
 
 let mediaServer: import("http").Server | null = null;

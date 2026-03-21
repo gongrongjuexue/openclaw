@@ -178,7 +178,7 @@ Examples:
 		.description(
 			"Run inbound webhook. ingress=tailscale updates Twilio; ingress=none stays local-only.",
 		)
-		.option("-p, --port <port>", "Port to listen on", "42873")
+		.option("-p, --port <port>", "Port to listen on", "3000")
 		.option("-r, --reply <text>", "Optional auto-reply text")
 		.option("--path <path>", "Webhook path", "/webhook/whatsapp")
 		.option(

@@ -25,7 +25,7 @@ Install from npm (global): `npm install -g warelay` (Node 22+). Then choose **on
 ## Main Features
 - **Two providers:** Twilio (default) for reliable delivery + status; Web provider for quick personal sends/receives via QR login.
 - **Auto-replies:** Static templates or external commands (Claude-aware), with per-sender or global sessions and `/new` resets.
-- Claude setup guide: see `docs/claude-config.md` for the exact Claude CLI configuration we support.
+- Claude setup: configure `~/.warelay/warelay.json` with `reply.mode: "command"` and `command: ["claude", ...]`.
 - **Webhook in one go:** `warelay webhook --ingress tailscale` enables Tailscale Funnel, runs the webhook server, and updates the Twilio sender callback URL.
 - **Polling fallback:** `relay` polls Twilio when webhooks aren’t available; works headless.
 - **Status + delivery tracking:** `status` shows recent inbound/outbound; `send` can wait for final Twilio status.
