@@ -1,14 +1,6 @@
 import type { OpenClawConfig } from "../config/config.js";
 import type { ModelDefinitionConfig } from "../config/types.models.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { KILOCODE_BASE_URL } from "../providers/kilocode-shared.js";
-import {
-  discoverHuggingfaceModels,
-  HUGGINGFACE_BASE_URL,
-  HUGGINGFACE_MODEL_CATALOG,
-  buildHuggingfaceModelDefinition,
-} from "./huggingface-models.js";
-import { discoverKilocodeModels } from "./kilocode-models.js";
 import {
   enrichOllamaModelsWithContext,
   OLLAMA_DEFAULT_CONTEXT_WINDOW,
@@ -18,8 +10,6 @@ import {
   resolveOllamaApiBase,
   type OllamaTagsResponse,
 } from "./ollama-models.js";
-import { discoverVeniceModels, VENICE_BASE_URL } from "./venice-models.js";
-import { discoverVercelAiGatewayModels, VERCEL_AI_GATEWAY_BASE_URL } from "./vercel-ai-gateway.js";
 
 export { resolveOllamaApiBase } from "./ollama-models.js";
 
@@ -30,15 +20,6 @@ const log = createSubsystemLogger("agents/model-providers");
 
 const OLLAMA_SHOW_CONCURRENCY = 8;
 const OLLAMA_SHOW_MAX_MODELS = 200;
-
-const OPENAI_COMPAT_LOCAL_DEFAULT_CONTEXT_WINDOW = 128000;
-const OPENAI_COMPAT_LOCAL_DEFAULT_MAX_TOKENS = 8192;
-const OPENAI_COMPAT_LOCAL_DEFAULT_COST = {
-  input: 0,
-  output: 0,
-  cacheRead: 0,
-  cacheWrite: 0,
-};
 
 type OpenAICompatModelsResponse = {
   data?: Array<{
@@ -98,9 +79,6 @@ async function discoverOllamaModels(
 async function discoverOpenAICompatibleLocalModels(params: {
   baseUrl: string;
   apiKey?: string;
-  label: string;
-  contextWindow?: number;
-  maxTokens?: number;
 }): Promise<ModelDefinitionConfig[]> {
   if (process.env.VITEST || process.env.NODE_ENV === "test") {
     return [];
@@ -116,13 +94,13 @@ async function discoverOpenAICompatibleLocalModels(params: {
       signal: AbortSignal.timeout(5000),
     });
     if (!response.ok) {
-      log.warn(`Failed to discover ${params.label} models: ${response.status}`);
+      log.warn(`Failed to discover models: ${response.status}`);
       return [];
     }
     const data = (await response.json()) as OpenAICompatModelsResponse;
     const models = data.data ?? [];
     if (models.length === 0) {
-      log.warn(`No ${params.label} models found on local instance`);
+      log.warn(`No models found on local instance`);
       return [];
     }
 
@@ -136,24 +114,15 @@ async function discoverOpenAICompatibleLocalModels(params: {
           name: modelId,
           reasoning: isReasoningModelHeuristic(modelId),
           input: ["text"],
-          cost: OPENAI_COMPAT_LOCAL_DEFAULT_COST,
-          contextWindow: params.contextWindow ?? OPENAI_COMPAT_LOCAL_DEFAULT_CONTEXT_WINDOW,
-          maxTokens: params.maxTokens ?? OPENAI_COMPAT_LOCAL_DEFAULT_MAX_TOKENS,
+          cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+          contextWindow: 128000,
+          maxTokens: 8192,
         } satisfies ModelDefinitionConfig;
       });
   } catch (error) {
-    log.warn(`Failed to discover ${params.label} models: ${String(error)}`);
+    log.warn(`Failed to discover models: ${String(error)}`);
     return [];
   }
-}
-
-export async function buildVeniceProvider(): Promise<ProviderConfig> {
-  const models = await discoverVeniceModels();
-  return {
-    baseUrl: VENICE_BASE_URL,
-    api: "openai-completions",
-    models,
-  };
 }
 
 export async function buildOllamaProvider(
@@ -164,40 +133,6 @@ export async function buildOllamaProvider(
   return {
     baseUrl: resolveOllamaApiBase(configuredBaseUrl),
     api: "ollama",
-    models,
-  };
-}
-
-export async function buildHuggingfaceProvider(discoveryApiKey?: string): Promise<ProviderConfig> {
-  const resolvedSecret = discoveryApiKey?.trim() ?? "";
-  const models =
-    resolvedSecret !== ""
-      ? await discoverHuggingfaceModels(resolvedSecret)
-      : HUGGINGFACE_MODEL_CATALOG.map(buildHuggingfaceModelDefinition);
-  return {
-    baseUrl: HUGGINGFACE_BASE_URL,
-    api: "openai-completions",
-    models,
-  };
-}
-
-export async function buildVercelAiGatewayProvider(): Promise<ProviderConfig> {
-  return {
-    baseUrl: VERCEL_AI_GATEWAY_BASE_URL,
-    api: "anthropic-messages",
-    models: await discoverVercelAiGatewayModels(),
-  };
-}
-
-/**
- * Build the Kilocode provider with dynamic model discovery from the gateway
- * API. Falls back to the static catalog on failure.
- */
-export async function buildKilocodeProviderWithDiscovery(): Promise<ProviderConfig> {
-  const models = await discoverKilocodeModels();
-  return {
-    baseUrl: KILOCODE_BASE_URL,
-    api: "openai-completions",
     models,
   };
 }
