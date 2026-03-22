@@ -62,22 +62,25 @@ export async function runChannelsCapabilities(
   opts: ChannelsCapabilitiesOptions,
   env: RuntimeEnv = defaultRuntime,
 ): Promise<string> {
-  const cfg = requireValidConfig(opts);
+  const cfg = await requireValidConfig(env);
+  if (!cfg) {
+    return theme.error("Invalid configuration");
+  }
   const channelFilter = opts.channel?.trim();
   const accountFilter = opts.account?.trim();
-  const channels = listChannelPlugins();
+  const channels: ChannelPlugin[] = listChannelPlugins();
   const reports: ChannelCapabilitiesReport[] = [];
 
   for (const entry of channels) {
-    const channelId = String(entry.plugin.id);
+    const channelId = String(entry.id);
     if (channelFilter && channelId !== channelFilter) {
       continue;
     }
 
     const accountId = resolveChannelDefaultAccountId({
-      channel: channelId,
+      plugin: entry,
       cfg,
-      accountId: accountFilter,
+      accountIds: accountFilter ? [accountFilter] : undefined,
     });
 
     const accountName =
@@ -107,7 +110,7 @@ export async function runChannelsCapabilities(
       configured,
       enabled,
       support: entry.capabilities,
-      actions: entry.actions?.map((a) => String(a.id)),
+      actions: (entry.actions as Array<{ id?: string }> | undefined)?.map((a) => String(a.id)),
     });
   }
 
