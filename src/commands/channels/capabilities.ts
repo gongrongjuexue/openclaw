@@ -2,7 +2,7 @@ import { resolveChannelDefaultAccountId } from "../../channels/plugins/helpers.j
 import { getChannelPlugin, listChannelPlugins } from "../../channels/plugins/index.js";
 import type { ChannelCapabilities, ChannelPlugin } from "../../channels/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { danger } from "../../globals.js";
+import chalk from "chalk";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { theme } from "../../terminal/theme.js";
 import { formatChannelAccountLabel, requireValidConfig } from "./shared.js";
@@ -39,9 +39,9 @@ function formatChannelSummary(params: {
   const status = configured
     ? enabled
       ? theme.success("enabled")
-      : theme.warning("disabled")
-    : theme.danger("not configured");
-  const lines = [`${theme.bold(channel)} — ${accountLabel}: ${status}`];
+      : theme.warn("disabled")
+    : theme.error("not configured");
+  const lines = [`${chalk.bold(channel)} — ${accountLabel}: ${status}`];
   if (capabilities) {
     const chatTypes = capabilities.chatTypes?.join(", ") || "none";
     lines.push(`  Chat types: ${chatTypes}`);
@@ -116,7 +116,7 @@ export async function runChannelsCapabilities(
   }
 
   if (reports.length === 0) {
-    return theme.warning("No channels configured.");
+    return theme.warn("No channels configured.");
   }
 
   const lines = reports.map((report) =>

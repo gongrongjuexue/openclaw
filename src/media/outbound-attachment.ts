@@ -1,4 +1,4 @@
-import { loadWebMedia } from "../../media/local-media.js";
+import { loadWebMedia } from "./local-media.js";
 import { buildOutboundMediaLoadOptions } from "./load-options.js";
 import { saveMediaBuffer } from "./store.js";
 
