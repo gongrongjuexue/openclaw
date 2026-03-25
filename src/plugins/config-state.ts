@@ -27,7 +27,6 @@ export const BUNDLED_ENABLED_BY_DEFAULT = new Set<string>([
   "device-pair",
   "ollama",
   "phone-control",
-  "talk-voice",
 ]);
 
 const normalizeList = (value: unknown): string[] => {

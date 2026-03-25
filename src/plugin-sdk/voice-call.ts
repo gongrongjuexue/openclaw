@@ -18,9 +18,8 @@ export {
   TtsConfigSchema,
   TtsModeSchema,
   TtsProviderSchema,
+  TtsAutoSchema,
 } from "../config/zod-schema.core.js";
-
-export type { TtsAutoSchema } from "../config/zod-schema.core.js";
 
 // Utils
 export { sleep } from "../utils.js";

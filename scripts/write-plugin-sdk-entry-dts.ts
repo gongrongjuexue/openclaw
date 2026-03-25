@@ -39,7 +39,6 @@ const entrypoints = [
   "phone-control",
   "qwen-portal-auth",
   "synology-chat",
-  "talk-voice",
   "test-utils",
   "thread-ownership",
   "tlon",
